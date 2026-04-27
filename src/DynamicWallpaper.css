@@ -1,0 +1,26 @@
+.wallpaper-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0; /* Letakkan di belakang semua kandungan */
+}
+
+.wallpaper-layer {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 2s ease-in-out; /* Transisi silang (crossfade) */
+}
+
+.wallpaper-layer.active {
+  opacity: 1;
+}
+
+.wallpaper-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65); /* Gelapkan sedikit untuk kejelaskan teks */
+  pointer-events: none;
+}

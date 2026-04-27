@@ -1641,3 +1641,43 @@
 }
 .beads-ambar .counter__num { color: #2a1200; text-shadow: 0 1px 3px rgba(255,200,0,0.4); }
 .beads-ambar .counter__frac { color: rgba(42,18,0,0.65); }
+
+/* ═══════════════════════════════
+   GABUNGAN TEMA & TASBIH (APPEARANCE)
+   ═══════════════════════════════ */
+.appearance-section-title {
+  font-family: 'Cinzel', serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #a08050;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: -6px;
+  margin-top: 4px;
+}
+
+.appearance-divider {
+  height: 1px;
+  background: rgba(92, 58, 30, 0.4);
+  margin: 4px 0;
+}
+
+/* Kemas kini picker-box sedia ada untuk benarkan scroll */
+.picker-box {
+  max-height: 85svh;
+  overflow-y: auto;
+}
+.picker-box::-webkit-scrollbar { width: 3px; }
+.picker-box::-webkit-scrollbar-track { background: transparent; }
+.picker-box::-webkit-scrollbar-thumb { background: #5c3a1e; border-radius: 2px; }
+
+/* Butang ikon kecil di footer */
+.icon-btn {
+  padding: 6px 12px;
+  font-size: 1.1rem;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
