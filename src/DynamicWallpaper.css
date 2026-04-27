@@ -3,6 +3,14 @@
   inset: 0;
   overflow: hidden;
   z-index: 0; /* Letakkan di belakang semua kandungan */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 1s ease-in-out, visibility 1s ease-in-out;
+}
+
+.wallpaper-container--visible {
+  opacity: 1;
+  visibility: visible;
 }
 
 .wallpaper-layer {
@@ -23,4 +31,27 @@
   inset: 0;
   background: rgba(0, 0, 0, 0.45); /* Gelapkan sedikit untuk kejelaskan teks */
   pointer-events: none;
+}
+
+.unsplash-attribution {
+  position: absolute;
+  bottom: 8px;
+  left: 12px;
+  z-index: 10;
+  font-family: sans-serif;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.6);
+  pointer-events: all;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.unsplash-attribution a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.4);
+}
+
+.unsplash-attribution a:hover {
+  color: #fff;
+  text-decoration-color: #fff;
 }

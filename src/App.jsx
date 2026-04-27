@@ -10,7 +10,6 @@ const THEMES = [
   { id: 'zamrud',  label: 'Zamrud',  swatch: 'radial-gradient(circle at 35% 30%, #1e5828, #0c1e10)' },
   { id: 'lautan',  label: 'Lautan',  swatch: 'radial-gradient(circle at 35% 30%, #1a4060, #080e18)' },
   { id: 'mawar',   label: 'Mawar',   swatch: 'radial-gradient(circle at 35% 30%, #6a2838, #180810)' },
-  { id: 'rawak',   label: 'Rawak',   swatch: 'linear-gradient(45deg, #102840, #3c1828)' },
 ]
 
 const BEAD_TYPES = [
@@ -313,6 +312,7 @@ export default function App() {
   const [selectedTheme, setSelectedTheme] = useState(() => localStorage.getItem('tasbih_theme') || 'cendana')
   const [selectedBead,  setSelectedBead]  = useState(() => localStorage.getItem('tasbih_bead')  || 'kayu')
   const [showAppearancePicker, setShowAppearancePicker] = useState(false)
+  const [isWallpaperMode, setIsWallpaperMode] = useState(() => localStorage.getItem('tasbih_wallpaper') === 'true')
 
   const countRef    = useRef(0)
   const sessionIdRef   = useRef(null)
@@ -329,6 +329,7 @@ export default function App() {
 
   useEffect(() => { localStorage.setItem('tasbih_theme', selectedTheme) }, [selectedTheme])
   useEffect(() => { localStorage.setItem('tasbih_bead',  selectedBead)  }, [selectedBead])
+  useEffect(() => { localStorage.setItem('tasbih_wallpaper', isWallpaperMode) }, [isWallpaperMode])
 
   useEffect(() => {
     if (!sessionIdRef.current || total === 0) return
@@ -450,17 +451,25 @@ export default function App() {
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
     >
-      {selectedTheme === 'rawak' && <DynamicWallpaper />}
-      {selectedTheme !== 'rawak' && <div className="wood-grain" />}
+      <DynamicWallpaper isVisible={isWallpaperMode} />
+      <div className={`wood-grain ${isWallpaperMode ? 'wood-grain--hidden' : ''}`} />
+
+      {/* ── Wallpaper Toggle Button ── */}
+      <button 
+        className={`wallpaper-btn ${isWallpaperMode ? 'wallpaper-btn--active' : ''}`}
+        onClick={e => { e.stopPropagation(); setIsWallpaperMode(w => !w) }}
+      >
+        🖼️
+      </button>
 
       {/* ── Header ── */}
-      <header className="header">
+      <header className={`header ${isWallpaperMode ? 'header--wallpaper-mode' : ''}`}>
         {zikir.arabic && <div className="zikir-arabic">{zikir.arabic}</div>}
         <div className="zikir-latin">{zikir.latin}</div>
       </header>
 
       {/* ── Tasbih ── */}
-      <div className="tasbih">
+      <div className={`tasbih ${isWallpaperMode ? 'tasbih--wallpaper-mode' : ''}`}>
         <div className="cluster cluster--top">
           {Array.from({ length: MAX_VISIBLE }, (_, i) => {
             const fromCounter = MAX_VISIBLE - 1 - i
