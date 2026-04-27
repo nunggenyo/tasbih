@@ -33,17 +33,22 @@ export default function DynamicWallpaper() {
 
         if (Array.isArray(data)) {
           // Kita guna resolusi 'regular' (biasanya 1080w).
-          // Cukup lawa untuk mobile dan tak makan data user teruk sangat.
           const urls = data.map(item => item.urls.regular);
           setImages(urls);
-
-          // Paparkan gambar pertama ke layer 1 dengan segera
           setBg1(urls[0]);
         }
       } catch (error) {
         console.error("Gagal memuat turun gambar dari Unsplash:", error);
-        // Fallback: Jika API error (sebab limit dll), kita guna placeholder
-        setBg1('https://picsum.photos/1080/1920?random=1');
+        // Fallback: Jika API error (sebab limit atau tiada API key), kita guna senarai gambar lalai
+        const fallbacks = [
+          'https://images.unsplash.com/photo-1519817650390-64a93db51149?q=80&w=1080&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1551041777-ed277b8dd348?q=80&w=1080&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1527842891421-42eec6e703ea?q=80&w=1080&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1507608616759-54f48f0af0ee?q=80&w=1080&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1080&auto=format&fit=crop'
+        ];
+        setImages(fallbacks);
+        setBg1(fallbacks[0]);
       }
     };
 
@@ -90,11 +95,11 @@ export default function DynamicWallpaper() {
     <div className="wallpaper-container">
       <div
         className={`wallpaper-layer ${activeLayer === 1 ? 'active' : ''}`}
-        style={{ backgroundImage: `url(${bg1})` }}
+        style={{ backgroundImage: `url("${bg1}")` }}
       />
       <div
         className={`wallpaper-layer ${activeLayer === 2 ? 'active' : ''}`}
-        style={{ backgroundImage: `url(${bg2})` }}
+        style={{ backgroundImage: `url("${bg2}")` }}
       />
       {/* Overlay Gelap */}
       <div className="wallpaper-overlay" />

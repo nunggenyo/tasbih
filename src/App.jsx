@@ -451,7 +451,7 @@ export default function App() {
       onTouchEnd={onTouchEnd}
     >
       {selectedTheme === 'rawak' && <DynamicWallpaper />}
-      <div className="wood-grain" />
+      {selectedTheme !== 'rawak' && <div className="wood-grain" />}
 
       {/* ── Header ── */}
       <header className="header">

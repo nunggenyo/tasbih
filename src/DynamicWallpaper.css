@@ -21,6 +21,6 @@
 .wallpaper-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65); /* Gelapkan sedikit untuk kejelaskan teks */
+  background: rgba(0, 0, 0, 0.45); /* Gelapkan sedikit untuk kejelaskan teks */
   pointer-events: none;
 }
