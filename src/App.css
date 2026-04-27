@@ -86,7 +86,7 @@
 .zikir-latin {
   font-family: 'Cinzel', serif;
   font-size: clamp(0.68rem, 2.6vw, 0.88rem);
-  color: #90682c;
+  color: var(--gold-dim);
   letter-spacing: 0.22em;
   margin-top: 5px;
   font-style: italic;
@@ -525,8 +525,8 @@
 }
 
 .hint {
-  font-size: 0.7rem; /* Besarkan arahan swipe dari 0.58rem */
-  color: #a07840; /* Terangkan warna supaya mudah dibaca */
+  font-size: 0.7rem;
+  color: var(--gold-dim);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   animation: hint-pulse 3s ease-in-out infinite;
@@ -592,7 +592,7 @@
 .overlay__sub {
   font-family: 'Cinzel', serif;
   font-size: 0.8rem;
-  color: #a07840;
+  color: var(--gold-dim);
   letter-spacing: 0.22em;
   text-transform: uppercase;
 }
@@ -692,12 +692,18 @@
   padding: 24px 20px;
   width: 90%;
   max-width: 380px;
+  max-height: 92svh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 20px;
   box-shadow: 0 15px 40px rgba(0,0,0,0.9), inset 0 2px 5px rgba(255,255,255,0.05);
   animation: modal-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
+
+.setup-box::-webkit-scrollbar { width: 3px; }
+.setup-box::-webkit-scrollbar-track { background: transparent; }
+.setup-box::-webkit-scrollbar-thumb { background: #5c3a1e; border-radius: 2px; }
 
 .setup-title {
   font-family: 'Amiri', serif;
@@ -1112,3 +1118,526 @@
   border-color: #a83c3c;
   color: #ffe0e0;
 }
+
+/* ═══════════════════════════════
+   FOOTER BUTTON SMALL VARIANT
+   ═══════════════════════════════ */
+.footer-btn--sm {
+  padding: 6px 16px;
+  font-size: 0.68rem;
+}
+
+/* ═══════════════════════════════
+   PICKER OVERLAY (TEMA & TASBIH)
+   ═══════════════════════════════ */
+.picker-overlay {
+  z-index: 300;
+  background: rgba(10, 5, 2, 0.93);
+  backdrop-filter: blur(10px);
+}
+
+.picker-box {
+  background: linear-gradient(145deg, #2a180e, #1c0f08);
+  border: 1px solid #5c3a1e;
+  border-radius: 20px;
+  padding: 22px 20px 24px;
+  width: 88%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.9), inset 0 2px 5px rgba(255,255,255,0.05);
+  animation: modal-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.picker-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+}
+
+.picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 10px;
+}
+
+.picker-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0,0,0,0.22);
+  border: 1px solid #3a2010;
+  border-radius: 14px;
+  padding: 12px 6px 10px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.picker-card:active {
+  transform: scale(0.94);
+}
+
+.picker-card--active {
+  background: rgba(201,168,76,0.12);
+  border-color: var(--gold);
+  box-shadow: 0 0 14px var(--gold-faint);
+}
+
+.picker-swatch {
+  display: block;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.08);
+  box-shadow:
+    inset -4px -4px 8px rgba(0,0,0,0.55),
+    inset 2px 2px 5px rgba(255,255,255,0.20),
+    2px 3px 8px rgba(0,0,0,0.60);
+  transition: all 0.18s;
+}
+
+.picker-card--active .picker-swatch {
+  border-color: var(--gold);
+  box-shadow:
+    inset -4px -4px 8px rgba(0,0,0,0.55),
+    inset 2px 2px 5px rgba(255,255,255,0.20),
+    2px 3px 8px rgba(0,0,0,0.60),
+    0 0 12px var(--gold-faint);
+}
+
+.picker-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #7a5830;
+  letter-spacing: 0.05em;
+  transition: color 0.18s;
+}
+
+.picker-card--active .picker-label {
+  color: var(--gold);
+}
+
+/* ═══════════════════════════════
+   SWATCH UI (TEMA & JENIS)
+   ═══════════════════════════════ */
+.setup-customize {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid #3a2010;
+  padding-top: 14px;
+}
+
+.setup-customize-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.setup-col-title--inline {
+  flex-shrink: 0;
+  width: 48px;
+  text-align: right;
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.setup-swatches {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  flex: 1;
+  padding: 2px 0;
+}
+.setup-swatches::-webkit-scrollbar { display: none; }
+
+.swatch-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 3px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.swatch-circle {
+  display: block;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.08);
+  box-shadow:
+    inset -3px -3px 6px rgba(0,0,0,0.55),
+    inset 2px 2px 4px rgba(255,255,255,0.18),
+    1px 2px 5px rgba(0,0,0,0.55);
+  transition: all 0.15s;
+}
+
+.swatch-btn--active .swatch-circle {
+  border-color: var(--gold);
+  box-shadow:
+    inset -3px -3px 6px rgba(0,0,0,0.55),
+    inset 2px 2px 4px rgba(255,255,255,0.18),
+    1px 2px 5px rgba(0,0,0,0.55),
+    0 0 10px var(--gold-faint),
+    0 0 4px rgba(201,168,76,0.4);
+}
+
+.swatch-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.48rem;
+  color: #5c3c1e;
+  letter-spacing: 0.03em;
+  transition: color 0.15s;
+  white-space: nowrap;
+}
+
+.swatch-btn--active .swatch-label {
+  color: var(--gold);
+}
+
+/* ═══════════════════════════════
+   TEMA: PERAK (Silver)
+   ═══════════════════════════════ */
+.theme-perak {
+  --gold:       #a0b0cc;
+  --gold-dim:   #607080;
+  --gold-faint: rgba(160,176,204,0.12);
+  background:
+    radial-gradient(ellipse 70% 40% at 50%   0%, #2a3448 0%, transparent 100%),
+    radial-gradient(ellipse 70% 40% at 50% 100%, #2a3448 0%, transparent 100%),
+    linear-gradient(180deg, #10141e 0%, #181e2c 45%, #10141e 100%);
+}
+
+/* ═══════════════════════════════
+   TEMA: ZAMRUD (Emerald)
+   ═══════════════════════════════ */
+.theme-zamrud {
+  --gold:       #58b870;
+  --gold-dim:   #337848;
+  --gold-faint: rgba(88,184,112,0.12);
+  background:
+    radial-gradient(ellipse 70% 40% at 50%   0%, #183c20 0%, transparent 100%),
+    radial-gradient(ellipse 70% 40% at 50% 100%, #183c20 0%, transparent 100%),
+    linear-gradient(180deg, #081410 0%, #102018 45%, #081410 100%);
+}
+
+/* ═══════════════════════════════
+   TEMA: LAUTAN (Ocean)
+   ═══════════════════════════════ */
+.theme-lautan {
+  --gold:       #5090d0;
+  --gold-dim:   #305878;
+  --gold-faint: rgba(80,144,208,0.12);
+  background:
+    radial-gradient(ellipse 70% 40% at 50%   0%, #102840 0%, transparent 100%),
+    radial-gradient(ellipse 70% 40% at 50% 100%, #102840 0%, transparent 100%),
+    linear-gradient(180deg, #060c16 0%, #0e1828 45%, #060c16 100%);
+}
+
+/* ═══════════════════════════════
+   TEMA: MAWAR (Rose)
+   ═══════════════════════════════ */
+.theme-mawar {
+  --gold:       #cc7888;
+  --gold-dim:   #7c4858;
+  --gold-faint: rgba(204,120,136,0.12);
+  background:
+    radial-gradient(ellipse 70% 40% at 50%   0%, #3c1828 0%, transparent 100%),
+    radial-gradient(ellipse 70% 40% at 50% 100%, #3c1828 0%, transparent 100%),
+    linear-gradient(180deg, #160810 0%, #201018 45%, #160810 100%);
+}
+
+/* ═══════════════════════════════
+   JENIS: MUTIARA (Pearl)
+   ═══════════════════════════════ */
+.beads-mutiara .bead,
+.beads-mutiara .bead--dim {
+  background: radial-gradient(
+    circle at 36% 30%,
+    #fffcf8 0%, #ede4d8 22%, #d4c8bc 44%,
+    #b8a89c 64%, #988878 82%, #786858 94%
+  );
+  box-shadow:
+    inset -5px -5px 13px rgba(0,0,0,0.28),
+    inset  4px  4px 10px rgba(255,255,255,0.65),
+    3px 6px 16px rgba(0,0,0,0.52),
+    0 0 8px rgba(255,245,235,0.18);
+}
+.beads-mutiara .bead--kubah {
+  background: radial-gradient(
+    ellipse at 50% 18%,
+    #fffef8 0%, #f4eee4 18%, #e0ceba 38%,
+    #c8b0a0 58%, #a89080 78%
+  );
+  box-shadow:
+    inset -4px -8px 18px rgba(0,0,0,0.22),
+    inset  3px  5px 12px rgba(255,255,255,0.72),
+    3px 8px 20px rgba(0,0,0,0.58),
+    0 0 18px rgba(255,245,235,0.28);
+}
+.beads-mutiara .counter,
+.beads-mutiara .anim-imam,
+.beads-mutiara .anim-replace {
+  background: radial-gradient(
+    circle at 36% 30%,
+    #fffcf8 0%, #ede4d8 22%, #d4c8bc 44%,
+    #b8a89c 64%, #988878 82%, #786858 94%
+  );
+  box-shadow:
+    inset -8px -8px 20px rgba(0,0,0,0.28),
+    inset  6px  6px 16px rgba(255,255,255,0.62),
+    4px 8px 24px rgba(0,0,0,0.60),
+    0 0 12px rgba(255,245,235,0.18);
+}
+.beads-mutiara .bead__shine,
+.beads-mutiara .counter-shine {
+  background: radial-gradient(ellipse at 40% 40%,
+    rgba(255,255,255,0.80), transparent 68%);
+}
+.beads-mutiara .counter__num { color: #2a1408; text-shadow: 0 1px 3px rgba(255,255,255,0.5); }
+.beads-mutiara .counter__frac { color: rgba(42,20,8,0.65); }
+
+/* ═══════════════════════════════
+   JENIS: KRISTAL (Crystal)
+   ═══════════════════════════════ */
+.beads-kristal .bead,
+.beads-kristal .bead--dim {
+  background: radial-gradient(
+    circle at 36% 30%,
+    #eaf6ff 0%, #b8d8f0 22%, #7aaed8 44%,
+    #4878b0 64%, #205888 82%, #0a3050 94%
+  );
+  box-shadow:
+    inset -5px -5px 13px rgba(0,0,0,0.40),
+    inset  4px  4px 10px rgba(180,240,255,0.42),
+    3px 6px 16px rgba(0,0,0,0.62),
+    0 0 10px rgba(80,160,255,0.18);
+}
+.beads-kristal .bead--kubah {
+  background: radial-gradient(
+    ellipse at 50% 18%,
+    #f4fcff 0%, #c8e8ff 18%, #88c0e0 40%,
+    #5090c8 60%, #266890 80%
+  );
+  box-shadow:
+    inset -4px -8px 18px rgba(0,0,0,0.38),
+    inset  3px  5px 12px rgba(180,240,255,0.52),
+    3px 8px 20px rgba(0,0,0,0.68),
+    0 0 18px rgba(80,160,255,0.32);
+}
+.beads-kristal .counter,
+.beads-kristal .anim-imam,
+.beads-kristal .anim-replace {
+  background: radial-gradient(
+    circle at 36% 30%,
+    #eaf6ff 0%, #b8d8f0 22%, #7aaed8 44%,
+    #4878b0 64%, #205888 82%, #0a3050 94%
+  );
+}
+.beads-kristal .bead__shine,
+.beads-kristal .counter-shine {
+  background: radial-gradient(ellipse at 40% 40%,
+    rgba(220,248,255,0.72), transparent 68%);
+}
+.beads-kristal .counter__num { color: #d8f0ff; }
+.beads-kristal .counter__frac { color: rgba(180,220,255,0.65); }
+
+/* ═══════════════════════════════
+   JENIS: AKIK (Red Agate)
+   ═══════════════════════════════ */
+.beads-akik .bead,
+.beads-akik .bead--dim {
+  background: radial-gradient(
+    circle at 36% 30%,
+    #f09090 0%, #cc5050 20%, #9a2828 40%,
+    #701010 60%, #480808 78%, #2c0404 92%
+  );
+  box-shadow:
+    inset -5px -5px 13px rgba(0,0,0,0.68),
+    inset  4px  4px 10px rgba(255,150,100,0.18),
+    3px 6px 16px rgba(0,0,0,0.78),
+    0 0 8px rgba(180,40,40,0.20);
+}
+.beads-akik .bead--kubah {
+  background: radial-gradient(
+    ellipse at 50% 18%,
+    #ffc0a0 0%, #ee8060 18%, #c84030 38%,
+    #902020 58%, #580808 78%
+  );
+  box-shadow:
+    inset -4px -8px 18px rgba(0,0,0,0.58),
+    inset  3px  5px 12px rgba(255,160,120,0.36),
+    3px 8px 20px rgba(0,0,0,0.80),
+    0 0 18px rgba(200,50,50,0.36);
+}
+.beads-akik .counter,
+.beads-akik .anim-imam,
+.beads-akik .anim-replace {
+  background: radial-gradient(
+    circle at 36% 30%,
+    #f09090 0%, #cc5050 20%, #9a2828 40%,
+    #701010 60%, #480808 78%, #2c0404 92%
+  );
+}
+.beads-akik .bead__shine,
+.beads-akik .counter-shine {
+  background: radial-gradient(ellipse at 40% 40%,
+    rgba(255,200,180,0.55), transparent 68%);
+}
+
+/* ═══════════════════════════════
+   JENIS: PIRUS (Turquoise)
+   ═══════════════════════════════ */
+.beads-pirus .bead,
+.beads-pirus .bead--dim {
+  background: radial-gradient(
+    circle at 36% 30%,
+    #90e0d8 0%, #48b8a8 20%, #208878 40%,
+    #0a6060 60%, #044848 78%, #022828 92%
+  );
+  box-shadow:
+    inset -5px -5px 13px rgba(0,0,0,0.55),
+    inset  4px  4px 10px rgba(100,220,200,0.25),
+    3px 6px 16px rgba(0,0,0,0.68),
+    0 0 8px rgba(40,180,160,0.18);
+}
+.beads-pirus .bead--kubah {
+  background: radial-gradient(
+    ellipse at 50% 18%,
+    #c0f0e8 0%, #70d0c0 18%, #30a890 38%,
+    #107868 58%, #045050 78%
+  );
+  box-shadow:
+    inset -4px -8px 18px rgba(0,0,0,0.48),
+    inset  3px  5px 12px rgba(100,220,200,0.42),
+    3px 8px 20px rgba(0,0,0,0.72),
+    0 0 18px rgba(40,180,160,0.34);
+}
+.beads-pirus .counter,
+.beads-pirus .anim-imam,
+.beads-pirus .anim-replace {
+  background: radial-gradient(
+    circle at 36% 30%,
+    #90e0d8 0%, #48b8a8 20%, #208878 40%,
+    #0a6060 60%, #044848 78%, #022828 92%
+  );
+}
+.beads-pirus .bead__shine,
+.beads-pirus .counter-shine {
+  background: radial-gradient(ellipse at 40% 40%,
+    rgba(180,255,245,0.55), transparent 68%);
+}
+.beads-pirus .counter__num { color: #c8fff8; }
+.beads-pirus .counter__frac { color: rgba(160,240,228,0.65); }
+
+/* ═══════════════════════════════
+   JENIS: ONYX (Black Onyx)
+   ═══════════════════════════════ */
+.beads-onyx .bead,
+.beads-onyx .bead--dim {
+  background: radial-gradient(
+    circle at 36% 30%,
+    #707080 0%, #484858 18%, #303040 38%,
+    #202030 58%, #141420 76%, #080810 92%
+  );
+  box-shadow:
+    inset -5px -5px 13px rgba(0,0,0,0.90),
+    inset  4px  4px 10px rgba(200,200,255,0.10),
+    3px 6px 16px rgba(0,0,0,0.95),
+    0 0 6px rgba(100,100,160,0.12);
+}
+.beads-onyx .bead--kubah {
+  background: radial-gradient(
+    ellipse at 50% 18%,
+    #9898b0 0%, #606070 18%, #404050 38%,
+    #282838 58%, #181828 78%
+  );
+  box-shadow:
+    inset -4px -8px 18px rgba(0,0,0,0.80),
+    inset  3px  5px 12px rgba(200,200,255,0.12),
+    3px 8px 20px rgba(0,0,0,0.92),
+    0 0 18px rgba(100,100,180,0.20);
+}
+.beads-onyx .counter,
+.beads-onyx .anim-imam,
+.beads-onyx .anim-replace {
+  background: radial-gradient(
+    circle at 36% 30%,
+    #707080 0%, #484858 18%, #303040 38%,
+    #202030 58%, #141420 76%, #080810 92%
+  );
+}
+.beads-onyx .bead__shine,
+.beads-onyx .counter-shine {
+  background: radial-gradient(ellipse at 40% 40%,
+    rgba(200,200,255,0.30), transparent 68%);
+}
+
+/* ═══════════════════════════════
+   JENIS: AMBAR (Amber)
+   ═══════════════════════════════ */
+.beads-ambar .bead,
+.beads-ambar .bead--dim {
+  background: radial-gradient(
+    circle at 36% 30%,
+    #ffe890 0%, #e8b030 20%, #c07810 40%,
+    #985008 60%, #6e3002 78%, #481800 92%
+  );
+  box-shadow:
+    inset -5px -5px 13px rgba(0,0,0,0.50),
+    inset  4px  4px 10px rgba(255,220,80,0.35),
+    3px 6px 16px rgba(0,0,0,0.68),
+    0 0 10px rgba(210,140,0,0.22);
+}
+.beads-ambar .bead--kubah {
+  background: radial-gradient(
+    ellipse at 50% 18%,
+    #fff4a0 0%, #f0c840 18%, #d09020 38%,
+    #a06010 58%, #703808 78%
+  );
+  box-shadow:
+    inset -4px -8px 18px rgba(0,0,0,0.45),
+    inset  3px  5px 12px rgba(255,230,100,0.48),
+    3px 8px 20px rgba(0,0,0,0.70),
+    0 0 20px rgba(220,160,0,0.40);
+}
+.beads-ambar .counter,
+.beads-ambar .anim-imam,
+.beads-ambar .anim-replace {
+  background: radial-gradient(
+    circle at 36% 30%,
+    #ffe890 0%, #e8b030 20%, #c07810 40%,
+    #985008 60%, #6e3002 78%, #481800 92%
+  );
+  box-shadow:
+    inset -8px -8px 20px rgba(0,0,0,0.50),
+    inset  6px  6px 16px rgba(255,220,80,0.32),
+    4px 8px 24px rgba(0,0,0,0.70),
+    0 0 14px rgba(210,140,0,0.20);
+}
+.beads-ambar .bead__shine,
+.beads-ambar .counter-shine {
+  background: radial-gradient(ellipse at 40% 40%,
+    rgba(255,250,180,0.68), transparent 68%);
+}
+.beads-ambar .counter__num { color: #2a1200; text-shadow: 0 1px 3px rgba(255,200,0,0.4); }
+.beads-ambar .counter__frac { color: rgba(42,18,0,0.65); }

@@ -3,6 +3,24 @@ import './App.css'
 
 const MAX_VISIBLE = 8
 
+const THEMES = [
+  { id: 'cendana', label: 'Cendana', swatch: 'radial-gradient(circle at 35% 30%, #6a3c16, #221208)' },
+  { id: 'perak',   label: 'Perak',   swatch: 'radial-gradient(circle at 35% 30%, #4a5868, #141820)' },
+  { id: 'zamrud',  label: 'Zamrud',  swatch: 'radial-gradient(circle at 35% 30%, #1e5828, #0c1e10)' },
+  { id: 'lautan',  label: 'Lautan',  swatch: 'radial-gradient(circle at 35% 30%, #1a4060, #080e18)' },
+  { id: 'mawar',   label: 'Mawar',   swatch: 'radial-gradient(circle at 35% 30%, #6a2838, #180810)' },
+]
+
+const BEAD_TYPES = [
+  { id: 'kayu',    label: 'Kayu',    swatch: 'radial-gradient(circle at 35% 30%, #ddb87e, #8e5e30, #2c1104)' },
+  { id: 'mutiara', label: 'Mutiara', swatch: 'radial-gradient(circle at 35% 30%, #fffcf8, #d4c8bc, #786858)' },
+  { id: 'kristal', label: 'Kristal', swatch: 'radial-gradient(circle at 35% 30%, #e8f4ff, #7ab0d8, #0a3050)' },
+  { id: 'akik',    label: 'Akik',    swatch: 'radial-gradient(circle at 35% 30%, #f09090, #9a2828, #2c0404)' },
+  { id: 'pirus',   label: 'Pirus',   swatch: 'radial-gradient(circle at 35% 30%, #90e0d8, #208878, #022828)' },
+  { id: 'onyx',    label: 'Onyx',    swatch: 'radial-gradient(circle at 35% 30%, #707078, #303038, #080810)' },
+  { id: 'ambar',   label: 'Ambar',   swatch: 'radial-gradient(circle at 35% 30%, #ffe890, #c07810, #481800)' },
+]
+
 const ZIKIR = [
   { arabic: 'سُبْحَانَ ٱللَّه',                        latin: 'SubhanAllah' },
   { arabic: 'ٱلْحَمْدُ لِلَّه',                        latin: 'Alhamdulillah' },
@@ -182,6 +200,56 @@ function ZikirPicker({ current, onSelect, onClose }) {
   )
 }
 
+function ThemePicker({ current, onSelect, onClose }) {
+  return (
+    <div className="overlay overlay--modal picker-overlay">
+      <div className="picker-box">
+        <div className="picker-header">
+          <span className="picker-title">Pilih Tema</span>
+          <button className="records-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="picker-grid">
+          {THEMES.map(t => (
+            <button
+              key={t.id}
+              className={`picker-card${current === t.id ? ' picker-card--active' : ''}`}
+              onClick={() => { onSelect(t.id); onClose() }}
+            >
+              <span className="picker-swatch" style={{ background: t.swatch }} />
+              <span className="picker-label">{t.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function BeadPicker({ current, onSelect, onClose }) {
+  return (
+    <div className="overlay overlay--modal picker-overlay">
+      <div className="picker-box">
+        <div className="picker-header">
+          <span className="picker-title">Pilih Tasbih</span>
+          <button className="records-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="picker-grid">
+          {BEAD_TYPES.map(b => (
+            <button
+              key={b.id}
+              className={`picker-card${current === b.id ? ' picker-card--active' : ''}`}
+              onClick={() => { onSelect(b.id); onClose() }}
+            >
+              <span className="picker-swatch" style={{ background: b.swatch }} />
+              <span className="picker-label">{b.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const RING_R    = 60
 const RING_CIRC = 2 * Math.PI * RING_R
 
@@ -247,6 +315,10 @@ export default function App() {
   const [sessionStarted, setSessionStarted] = useState(false)
   const [customZikirText, setCustomZikirText] = useState('')
   const [customCountText, setCustomCountText] = useState('')
+  const [selectedTheme, setSelectedTheme] = useState(() => localStorage.getItem('tasbih_theme') || 'cendana')
+  const [selectedBead,  setSelectedBead]  = useState(() => localStorage.getItem('tasbih_bead')  || 'kayu')
+  const [showThemePicker, setShowThemePicker] = useState(false)
+  const [showBeadPicker,  setShowBeadPicker]  = useState(false)
 
   const countRef    = useRef(0)
   const sessionIdRef   = useRef(null)
@@ -260,6 +332,9 @@ export default function App() {
   const zikir = selectedZikirIdx === -1
     ? { arabic: '', latin: customZikirText || '—' }
     : ZIKIR[selectedZikirIdx]
+
+  useEffect(() => { localStorage.setItem('tasbih_theme', selectedTheme) }, [selectedTheme])
+  useEffect(() => { localStorage.setItem('tasbih_bead',  selectedBead)  }, [selectedBead])
 
   useEffect(() => {
     if (!sessionIdRef.current || total === 0) return
@@ -376,7 +451,7 @@ export default function App() {
 
   return (
     <div
-      className={`app${flash ? ' app--flash' : ''}`}
+      className={`app theme-${selectedTheme} beads-${selectedBead}${flash ? ' app--flash' : ''}`}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
@@ -444,6 +519,10 @@ export default function App() {
         <div className="footer__row">
           <button className="tukar-btn" onClick={e => { e.stopPropagation(); setIsSetupMode(true) }}>Pilih Zikir</button>
           <button className="records-btn" onClick={e => { e.stopPropagation(); setShowRecords(true) }}>Rekod</button>
+        </div>
+        <div className="footer__row">
+          <button className="tukar-btn footer-btn--sm" onClick={e => { e.stopPropagation(); setShowThemePicker(true) }}>Tema</button>
+          <button className="tukar-btn footer-btn--sm" onClick={e => { e.stopPropagation(); setShowBeadPicker(true) }}>Tasbih</button>
         </div>
         <div className="hint">
           <span className="hint__arrow">↓</span> swipe down to count
@@ -573,6 +652,24 @@ export default function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ── Theme Picker ── */}
+      {showThemePicker && (
+        <ThemePicker
+          current={selectedTheme}
+          onSelect={setSelectedTheme}
+          onClose={() => setShowThemePicker(false)}
+        />
+      )}
+
+      {/* ── Bead Picker ── */}
+      {showBeadPicker && (
+        <BeadPicker
+          current={selectedBead}
+          onSelect={setSelectedBead}
+          onClose={() => setShowBeadPicker(false)}
+        />
       )}
     </div>
   )
