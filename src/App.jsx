@@ -218,7 +218,6 @@ function ObjektifSetupModal({ onClose, onSave, existing }) {
       : ZIKIR.map((z, i) => ({ id: i, zikirIdx: i, count: 33, enabled: false }))
   )
 
-  // State untuk simpan nilai input custom sementara bagi setiap ID zikir
   const [customCounts, setCustomCounts] = useState(() => {
     const initialCustom = {}
     if (existing) {
@@ -235,12 +234,10 @@ function ObjektifSetupModal({ onClose, onSave, existing }) {
 
   const setCount = (id, count) => {
     setItems(prev => prev.map(it => it.id === id ? { ...it, count } : it))
-    // Reset input custom jika butang default dipilih
     setCustomCounts(prev => ({ ...prev, [id]: '' }))
   }
 
-  const handleCustomChange = (id, val) => {
-    // Hanya benarkan nombor
+  const handleCustomCountChange = (id, val) => {
     const numStr = val.replace(/\D/g, '')
     setCustomCounts(prev => ({ ...prev, [id]: numStr }))
 
@@ -250,7 +247,31 @@ function ObjektifSetupModal({ onClose, onSave, existing }) {
     }
   }
 
-  const enabled = items.filter(it => it.enabled)
+  // Fungsi untuk mengemas kini nama zikir custom
+  const updateCustomName = (id, val) => {
+    setItems(prev => prev.map(it => it.id === id ? { ...it, latin: val } : it))
+  }
+
+  // Tambah baris zikir custom baru
+  const addCustomZikir = () => {
+    const newId = `custom-${Date.now()}`
+    setItems(prev => [...prev, {
+      id: newId,
+      isCustom: true,
+      zikirIdx: -1,
+      latin: '',
+      count: 33,
+      enabled: true
+    }])
+  }
+
+  // Padam zikir custom
+  const removeCustomZikir = (id) => {
+    setItems(prev => prev.filter(it => it.id !== id))
+  }
+
+  // Pastikan zikir custom mempunyai nama sebelum membenarkan butang simpan ditekan
+  const enabled = items.filter(it => it.enabled && (!it.isCustom || it.latin.trim() !== ''))
 
   return (
     <div className="overlay overlay--modal obj-setup-overlay">
@@ -263,7 +284,7 @@ function ObjektifSetupModal({ onClose, onSave, existing }) {
 
         <div className="obj-setup-list">
           {items.map(it => {
-            const z = ZIKIR[it.zikirIdx]
+            const z = it.isCustom ? { arabic: '', latin: it.latin } : ZIKIR[it.zikirIdx]
             const isCustomActive = customCounts[it.id] && customCounts[it.id].length > 0
 
             return (
@@ -275,10 +296,35 @@ function ObjektifSetupModal({ onClose, onSave, existing }) {
                 >
                   {it.enabled ? '✓' : ''}
                 </button>
-                <div className="obj-setup-info" onClick={() => toggle(it.id)}>
-                  <span className="obj-setup-arabic">{z.arabic}</span>
-                  <span className="obj-setup-latin">{z.latin}</span>
+
+                <div className="obj-setup-info" onClick={() => !it.isCustom && toggle(it.id)}>
+                  {!it.isCustom ? (
+                    <>
+                      <span className="obj-setup-arabic">{z.arabic}</span>
+                      <span className="obj-setup-latin">{z.latin}</span>
+                    </>
+                  ) : (
+                    // Input untuk nama zikir custom
+                    <input
+                      type="text"
+                      className="setup-custom-input"
+                      style={{ padding: '8px 10px', marginTop: 0, width: '100%', textAlign: 'left' }}
+                      placeholder="Nama zikir custom..."
+                      value={it.latin}
+                      onChange={e => updateCustomName(it.id, e.target.value)}
+                      onClick={e => e.stopPropagation()}
+                    />
+                  )}
                 </div>
+
+                {it.isCustom && (
+                  <button
+                    className="records-close"
+                    style={{ marginLeft: 'auto', padding: '0 8px', fontSize: '1.2rem' }}
+                    onClick={() => removeCustomZikir(it.id)}
+                  >✕</button>
+                )}
+
                 {it.enabled && (
                   <div className="obj-count-chips">
                     {DEFAULT_COUNTS.map(n => (
@@ -294,7 +340,7 @@ function ObjektifSetupModal({ onClose, onSave, existing }) {
                       className={`obj-chip obj-chip-input ${isCustomActive ? 'obj-chip--on' : ''}`}
                       placeholder="Jumlah lain"
                       value={customCounts[it.id] || ''}
-                      onChange={e => handleCustomChange(it.id, e.target.value)}
+                      onChange={e => handleCustomCountChange(it.id, e.target.value)}
                       onClick={e => e.stopPropagation()}
                     />
                   </div>
@@ -302,6 +348,16 @@ function ObjektifSetupModal({ onClose, onSave, existing }) {
               </div>
             )
           })}
+
+          {/* Butang tambah zikir custom */}
+          <button
+            className="setup-opt"
+            style={{ borderStyle: 'dashed', marginTop: '8px', opacity: 0.8 }}
+            onClick={addCustomZikir}
+          >
+            + Tambah Zikir Custom
+          </button>
+
         </div>
 
         <div className="modal-actions" style={{ marginTop: 16 }}>
@@ -310,7 +366,11 @@ function ObjektifSetupModal({ onClose, onSave, existing }) {
             className="setup-start-btn"
             style={{ flex: 1 }}
             disabled={enabled.length === 0}
-            onClick={() => onSave(items)}
+            onClick={() => {
+              // Tapis dan buang zikir custom yang namanya dibiarkan kosong
+              const cleanItems = items.filter(it => !it.isCustom || it.latin.trim() !== '')
+              onSave(cleanItems)
+            }}
           >
             Simpan Objektif
           </button>
@@ -332,7 +392,8 @@ function ObjektifView({ onClose, onStartZikir, embedded }) {
 
   const getProgress = (obj) => {
     const sessions = JSON.parse(localStorage.getItem('zikir_sessions') || '[]')
-    const zikirName = ZIKIR[obj.zikirIdx].latin
+    // Semak jika zikir custom, guna nama custom. Jika tidak, guna nama dari senarai lalai.
+    const zikirName = obj.isCustom ? obj.latin : ZIKIR[obj.zikirIdx].latin
     const todaySessions = sessions.filter(s => s.date === todayStr && s.zikir === zikirName)
     return todaySessions.reduce((sum, s) => sum + s.total, 0)
   }
@@ -344,7 +405,8 @@ function ObjektifView({ onClose, onStartZikir, embedded }) {
   }
 
   const handleStart = (obj) => {
-    onStartZikir(obj.zikirIdx, obj.count)
+    // Hantar parameter -1 dan nama zikir jika ia zikir custom
+    onStartZikir(obj.isCustom ? -1 : obj.zikirIdx, obj.count, obj.isCustom ? obj.latin : '')
   }
 
   const content = (
@@ -366,7 +428,9 @@ function ObjektifView({ onClose, onStartZikir, embedded }) {
             const done = getProgress(obj)
             const pct = Math.min(1, done / obj.count)
             const complete = done >= obj.count
-            const z = ZIKIR[obj.zikirIdx]
+            // Tentukan sumber teks zikir
+            const z = obj.isCustom ? { arabic: '', latin: obj.latin } : ZIKIR[obj.zikirIdx]
+
             return (
               <button
                 key={obj.id}
@@ -375,7 +439,7 @@ function ObjektifView({ onClose, onStartZikir, embedded }) {
               >
                 <div className="obj-card-top">
                   <div className="obj-card-text">
-                    <span className="obj-card-arabic">{z.arabic}</span>
+                    {z.arabic && <span className="obj-card-arabic">{z.arabic}</span>}
                     <span className="obj-card-latin">{z.latin}</span>
                   </div>
                   <div className="obj-card-status">
@@ -689,9 +753,10 @@ export default function App() {
     setShowResetModal(false)
   }, [])
 
-  const startFromObjectif = useCallback((zikirIdx, targetCount) => {
+  const startFromObjectif = useCallback((zikirIdx, targetCount, customText = '') => {
     const todayStr = new Date().toISOString().split('T')[0]
-    const zikirName = ZIKIR[zikirIdx].latin
+    // Guna customText jika zikirIdx ialah -1 (Zikir Custom)
+    const zikirName = zikirIdx === -1 ? customText : ZIKIR[zikirIdx].latin
 
     // Kira progress hari ini untuk zikir ini
     const sessions = JSON.parse(localStorage.getItem('zikir_sessions') || '[]')
@@ -704,7 +769,7 @@ export default function App() {
 
     setSelectedZikirIdx(zikirIdx)
     setTargetCount(targetCount)
-    setCustomZikirText('')
+    setCustomZikirText(customText) // Set teks custom ke dalam state utama
     setCustomCountText('')
     sessionIdRef.current   = Date.now()
     sessionDateRef.current = todayStr
