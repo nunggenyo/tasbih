@@ -50,6 +50,7 @@ function RecordsView({ onClose, onReset }) {
     localStorage.removeItem('zikir_sessions')
     setSessions([])
     setConfirmReset(false)
+    onReset()
   }
 
   const months = useMemo(() => {
@@ -201,6 +202,188 @@ function ZikirPicker({ current, onSelect, onClose }) {
   )
 }
 
+const DEFAULT_COUNTS = [33, 99, 100, 1000]
+
+function ObjektifSetupModal({ onClose, onSave, existing }) {
+  const [items, setItems] = useState(() =>
+    existing && existing.length > 0
+      ? existing
+      : ZIKIR.map((z, i) => ({ id: i, zikirIdx: i, count: 33, enabled: false }))
+  )
+
+  const toggle = (id) => setItems(prev => prev.map(it => it.id === id ? { ...it, enabled: !it.enabled } : it))
+  const setCount = (id, count) => setItems(prev => prev.map(it => it.id === id ? { ...it, count } : it))
+
+  const enabled = items.filter(it => it.enabled)
+
+  return (
+    <div className="overlay overlay--modal obj-setup-overlay">
+      <div className="obj-setup-box">
+        <div className="records-header" style={{ marginBottom: 12 }}>
+          <span className="records-title">Set Objektif Harian</span>
+          <button className="records-close" onClick={onClose}>✕</button>
+        </div>
+        <p className="obj-setup-hint">Pilih zikir dan tetapkan jumlah sasaran harian anda.</p>
+
+        <div className="obj-setup-list">
+          {items.map(it => {
+            const z = ZIKIR[it.zikirIdx]
+            return (
+              <div key={it.id} className={`obj-setup-row ${it.enabled ? 'obj-setup-row--on' : ''}`}>
+                <button
+                  className={`obj-check ${it.enabled ? 'obj-check--on' : ''}`}
+                  onClick={() => toggle(it.id)}
+                  aria-label="toggle"
+                >
+                  {it.enabled ? '✓' : ''}
+                </button>
+                <div className="obj-setup-info" onClick={() => toggle(it.id)}>
+                  <span className="obj-setup-arabic">{z.arabic}</span>
+                  <span className="obj-setup-latin">{z.latin}</span>
+                </div>
+                {it.enabled && (
+                  <div className="obj-count-chips">
+                    {DEFAULT_COUNTS.map(n => (
+                      <button
+                        key={n}
+                        className={`obj-chip ${it.count === n ? 'obj-chip--on' : ''}`}
+                        onClick={e => { e.stopPropagation(); setCount(it.id, n) }}
+                      >{n}</button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+        <div className="modal-actions" style={{ marginTop: 16 }}>
+          <button className="modal-btn modal-btn--cancel" onClick={onClose}>Batal</button>
+          <button
+            className="setup-start-btn"
+            style={{ flex: 1 }}
+            disabled={enabled.length === 0}
+            onClick={() => onSave(items)}
+          >
+            Simpan Objektif
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ObjektifView({ onClose, onStartZikir }) {
+  const todayStr = new Date().toISOString().split('T')[0]
+  const [showSetup, setShowSetup] = useState(false)
+  const [objectives, setObjectives] = useState(() => {
+    const saved = localStorage.getItem('zikir_objectives')
+    return saved ? JSON.parse(saved) : []
+  })
+  const [progress, setProgress] = useState(() => {
+    const key = `zikir_obj_progress_${todayStr}`
+    const saved = localStorage.getItem(key)
+    return saved ? JSON.parse(saved) : {}
+  })
+
+  const enabledObj = objectives.filter(it => it.enabled)
+
+  const getProgress = (obj) => {
+    const sessions = JSON.parse(localStorage.getItem('zikir_sessions') || '[]')
+    const zikirName = ZIKIR[obj.zikirIdx].latin
+    const todaySessions = sessions.filter(s => s.date === todayStr && s.zikir === zikirName)
+    return todaySessions.reduce((sum, s) => sum + s.total, 0)
+  }
+
+  const handleSave = (items) => {
+    setObjectives(items)
+    localStorage.setItem('zikir_objectives', JSON.stringify(items))
+    setShowSetup(false)
+  }
+
+  const handleStart = (obj) => {
+    onClose()
+    onStartZikir(obj.zikirIdx, obj.count)
+  }
+
+  return (
+    <>
+      <div className="overlay overlay--modal records-overlay">
+        <div className="records-box">
+          <div className="records-header">
+            <span className="records-title">Objektif Harian</span>
+            <button className="records-close" onClick={onClose}>✕</button>
+          </div>
+
+          <div className="obj-date-label">
+            {new Date().toLocaleDateString('ms-MY', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+          </div>
+
+          {enabledObj.length === 0 ? (
+            <div className="records-empty" style={{ padding: '32px 0' }}>
+              Tiada objektif ditetapkan.<br />
+              <span style={{ fontSize: '0.82rem', color: '#7a6030', marginTop: 6, display: 'block' }}>
+                Tekan "Set Objektif" untuk mulakan.
+              </span>
+            </div>
+          ) : (
+            <div className="obj-list">
+              {enabledObj.map(obj => {
+                const done = getProgress(obj)
+                const pct = Math.min(1, done / obj.count)
+                const complete = done >= obj.count
+                const z = ZIKIR[obj.zikirIdx]
+                return (
+                  <button
+                    key={obj.id}
+                    className={`obj-card ${complete ? 'obj-card--done' : ''}`}
+                    onClick={() => !complete && handleStart(obj)}
+                  >
+                    <div className="obj-card-top">
+                      <div className="obj-card-text">
+                        <span className="obj-card-arabic">{z.arabic}</span>
+                        <span className="obj-card-latin">{z.latin}</span>
+                      </div>
+                      <div className="obj-card-status">
+                        {complete
+                          ? <span className="obj-done-badge">✓ Selesai</span>
+                          : <span className="obj-tap-hint">Ketuk untuk mulakan →</span>
+                        }
+                      </div>
+                    </div>
+                    <div className="obj-progress-bar-wrap">
+                      <div className="obj-progress-bar">
+                        <div className="obj-progress-fill" style={{ width: `${pct * 100}%` }} />
+                      </div>
+                      <span className="obj-progress-label">{done.toLocaleString()} / {obj.count.toLocaleString()}</span>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          <button
+            className="setup-start-btn"
+            style={{ width: '100%', marginTop: 12 }}
+            onClick={() => setShowSetup(true)}
+          >
+            ✎ Set Objektif
+          </button>
+        </div>
+      </div>
+
+      {showSetup && (
+        <ObjektifSetupModal
+          onClose={() => setShowSetup(false)}
+          onSave={handleSave}
+          existing={objectives}
+        />
+      )}
+    </>
+  )
+}
+
 function AppearancePicker({ currentTheme, onSelectTheme, currentBead, onSelectBead, onClose }) {
   return (
     <div className="overlay overlay--modal picker-overlay">
@@ -303,7 +486,7 @@ export default function App() {
   const [showResetModal, setShowResetModal] = useState(false)
   const [targetCount, setTargetCount] = useState(33)
   const [selectedZikirIdx, setSelectedZikirIdx] = useState(0)
-  const [isSetupMode, setIsSetupMode] = useState(true)
+  const [isSetupMode, setIsSetupMode] = useState(false)
   const [showRecords, setShowRecords] = useState(false)
   const [showZikirPicker, setShowZikirPicker] = useState(false)
   const [sessionStarted, setSessionStarted] = useState(false)
@@ -312,6 +495,8 @@ export default function App() {
   const [selectedTheme, setSelectedTheme] = useState(() => localStorage.getItem('tasbih_theme') || 'cendana')
   const [selectedBead,  setSelectedBead]  = useState(() => localStorage.getItem('tasbih_bead')  || 'kayu')
   const [showAppearancePicker, setShowAppearancePicker] = useState(false)
+  const [showObjectives, setShowObjectives] = useState(false)
+  const [showMenu, setShowMenu] = useState(true)
   const [isWallpaperMode, setIsWallpaperMode] = useState(false) // Dimatikan sementara
 
   const countRef    = useRef(0)
@@ -370,7 +555,8 @@ export default function App() {
         setFlash(false)
         setRoundDone(false)
         setCount(0)
-        setIsSetupMode(true)
+        setSessionStarted(false)
+        setShowMenu(true)
       }, 1500)
     } else {
       countRef.current = next
@@ -418,8 +604,18 @@ export default function App() {
   }, [])
 
   const onResetClick = useCallback(() => {
+    countRef.current = 0
+    animRef.current  = false
+    sessionIdRef.current   = null
+    sessionDateRef.current = null
+    setCount(0)
+    setTotal(0)
+    setAnimating(false)
+    setFlash(false)
+    setRoundDone(false)
+    setSessionStarted(false)
     setShowRecords(false)
-    setShowResetModal(true)
+    setShowMenu(true)
   }, [])
 
   const confirmReset = useCallback(e => {
@@ -433,13 +629,44 @@ export default function App() {
     setAnimating(false)
     setFlash(false)
     setRoundDone(false)
+    setSessionStarted(false)
     setShowResetModal(false)
-    setIsSetupMode(true)
+    setShowMenu(true)
   }, [])
 
   const cancelReset = useCallback(e => {
     if (e) e.stopPropagation()
     setShowResetModal(false)
+  }, [])
+
+  const startFromObjectif = useCallback((zikirIdx, targetCount) => {
+    const todayStr = new Date().toISOString().split('T')[0]
+    const zikirName = ZIKIR[zikirIdx].latin
+
+    // Kira progress hari ini untuk zikir ini
+    const sessions = JSON.parse(localStorage.getItem('zikir_sessions') || '[]')
+    const todayDone = sessions
+      .filter(s => s.date === todayStr && s.zikir === zikirName)
+      .reduce((sum, s) => sum + s.total, 0)
+
+    // Resume dari bilangan yang dah dicapai (modulo targetCount)
+    const resumeCount = todayDone % targetCount
+
+    setSelectedZikirIdx(zikirIdx)
+    setTargetCount(targetCount)
+    setCustomZikirText('')
+    setCustomCountText('')
+    sessionIdRef.current   = Date.now()
+    sessionDateRef.current = todayStr
+    countRef.current = resumeCount
+    animRef.current  = false
+    setCount(resumeCount)
+    setTotal(0)
+    setFlash(false)
+    setRoundDone(false)
+    setSessionStarted(true)
+    setIsSetupMode(false)
+    setShowObjectives(false)
   }, [])
 
   const switchZikir = useCallback(idx => {
@@ -476,12 +703,15 @@ export default function App() {
       */}
 
       {/* ── Header ── */}
+      {sessionStarted && (
       <header className={`header ${isWallpaperMode ? 'header--wallpaper-mode' : ''} ${animating ? 'header--pulse' : ''}`}>
         {zikir.arabic && <div className="zikir-arabic">{zikir.arabic}</div>}
         <div className="zikir-latin">{zikir.latin}</div>
       </header>
+      )}
 
       {/* ── Tasbih ── */}
+      {sessionStarted && (
       <div className={`tasbih ${isWallpaperMode ? 'tasbih--wallpaper-mode' : ''}`}>
         <div className="cluster cluster--top">
           {Array.from({ length: MAX_VISIBLE }, (_, i) => {
@@ -527,18 +757,53 @@ export default function App() {
           })}
         </div>
       </div>
+      )}
 
       {/* ── Footer ── */}
       <footer className="footer">
-        <div className="footer__row">
-          <button className="tukar-btn" onClick={e => { e.stopPropagation(); setIsSetupMode(true) }}>Pilih Zikir</button>
-          <button className="records-btn" onClick={e => { e.stopPropagation(); setShowRecords(true) }}>Rekod</button>
-          <button className="tukar-btn icon-btn" onClick={e => { e.stopPropagation(); setShowAppearancePicker(true) }}>🎨</button>
-        </div>
+        <button
+          className="menu-btn"
+          onClick={e => { e.stopPropagation(); setShowMenu(m => !m) }}
+        >
+          ☰ Menu
+        </button>
         <div className="hint">
           <span className="hint__arrow">↓</span> swipe down to count
         </div>
       </footer>
+
+      {/* ── Popup Menu ── */}
+      {showMenu && (
+        <div
+          className="menu-backdrop"
+          onClick={e => { e.stopPropagation(); if (sessionStarted) setShowMenu(false) }}
+        >
+          <div className="menu-popup" onClick={e => e.stopPropagation()}>
+            <div className="menu-popup-title">Menu</div>
+            <button className="menu-item" onClick={e => { e.stopPropagation(); setShowMenu(false); setIsSetupMode(true) }}>
+              <span className="menu-item-icon">📿</span>
+              <span>Pilih Zikir</span>
+            </button>
+            <button className="menu-item" onClick={e => { e.stopPropagation(); setShowMenu(false); setShowObjectives(true) }}>
+              <span className="menu-item-icon">🎯</span>
+              <span>Objektif Harian</span>
+            </button>
+            <button className="menu-item" onClick={e => { e.stopPropagation(); setShowMenu(false); setShowRecords(true) }}>
+              <span className="menu-item-icon">📊</span>
+              <span>Rekod</span>
+            </button>
+            <button className="menu-item" onClick={e => { e.stopPropagation(); setShowMenu(false); setShowAppearancePicker(true) }}>
+              <span className="menu-item-icon">🎨</span>
+              <span>Penampilan</span>
+            </button>
+            {sessionStarted && (
+              <button className="menu-item menu-item--close" onClick={e => { e.stopPropagation(); setShowMenu(false) }}>
+                Tutup
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── Round-complete overlay ── */}
       {roundDone && (
@@ -663,6 +928,14 @@ export default function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ── Objectives Overlay ── */}
+      {showObjectives && (
+        <ObjektifView
+          onClose={() => setShowObjectives(false)}
+          onStartZikir={startFromObjectif}
+        />
       )}
 
       {/* ── Appearance Picker (Tema & Tasbih) ── */}
