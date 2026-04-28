@@ -604,13 +604,13 @@ export default function App() {
               <div className="setup-col">
                 <div className="setup-col-title">Jumlah</div>
                 <div className="setup-col-list">
-                  {[33, 100, 1000].map(num => (
+                  {[33, 99, 100, 1000, 70000].map(num => (
                     <button
                       key={num}
                       className={`setup-opt ${targetCount === num && customCountText === '' ? 'setup-opt--active' : ''}`}
                       onClick={() => { setTargetCount(num); setCustomCountText('') }}
                     >
-                      {num}x
+                      {num === 70000 ? '70,000' : num}x
                     </button>
                   ))}
                   <input

@@ -52,7 +52,6 @@
 /* wood-grain texture overlay */
 .wood-grain {
   position: fixed; inset: 0;
-  background-image: ... ; /* kekalkan kod sedia ada */
   pointer-events: none;
   z-index: 0;
   opacity: 1;
