@@ -617,6 +617,7 @@ export default function App() {
   const countRef    = useRef(0)
   const sessionIdRef   = useRef(null)
   const sessionDateRef = useRef(null)
+  const zikirNameRef   = useRef('')
   const animRef     = useRef(false)
   const countAtAnim = useRef(0)
 
@@ -633,14 +634,13 @@ export default function App() {
 
   useEffect(() => {
     if (!sessionIdRef.current || total === 0) return
-    const zikirName = selectedZikirIdx === -1 ? customZikirText : ZIKIR[selectedZikirIdx].latin
     const all = JSON.parse(localStorage.getItem('zikir_sessions') || '[]')
     const idx = all.findIndex(s => s.id === sessionIdRef.current)
-    const entry = { id: sessionIdRef.current, date: sessionDateRef.current, zikir: zikirName, total }
+    const entry = { id: sessionIdRef.current, date: sessionDateRef.current, zikir: zikirNameRef.current, total }
     if (idx >= 0) all[idx] = entry
     else all.push(entry)
     localStorage.setItem('zikir_sessions', JSON.stringify(all))
-  }, [total, selectedZikirIdx, customZikirText])
+  }, [total])
 
   const showKubahBot       = count < MAX_VISIBLE
   const kubahBotIdx        = count
@@ -769,10 +769,11 @@ export default function App() {
 
     setSelectedZikirIdx(zikirIdx)
     setTargetCount(targetCount)
-    setCustomZikirText(customText) // Set teks custom ke dalam state utama
+    setCustomZikirText(customText)
     setCustomCountText('')
     sessionIdRef.current   = Date.now()
     sessionDateRef.current = todayStr
+    zikirNameRef.current   = zikirName
     countRef.current = resumeCount
     animRef.current  = false
     setCount(resumeCount)
@@ -786,6 +787,7 @@ export default function App() {
   const switchZikir = useCallback(idx => {
     sessionIdRef.current   = Date.now()
     sessionDateRef.current = new Date().toISOString().split('T')[0]
+    zikirNameRef.current   = ZIKIR[idx].latin
     countRef.current = 0
     animRef.current  = false
     setCount(0)
@@ -985,8 +987,10 @@ export default function App() {
                   className="setup-start-btn"
                   disabled={selectedZikirIdx === -1 && !customZikirText.trim()}
                   onClick={() => {
+                    const name = selectedZikirIdx === -1 ? customZikirText : ZIKIR[selectedZikirIdx].latin
                     sessionIdRef.current   = Date.now()
                     sessionDateRef.current = new Date().toISOString().split('T')[0]
+                    zikirNameRef.current   = name
                     countRef.current = 0
                     animRef.current  = false
                     setCount(0)
