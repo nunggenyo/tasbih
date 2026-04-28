@@ -2033,6 +2033,26 @@
   font-weight: 700;
 }
 
+/* Custom input untuk Objektif Harian */
+.obj-chip-input {
+  width: 95px; /* Dilebarkan untuk muat teks "Jumlah lain" */
+  text-align: center;
+  outline: none;
+  box-shadow: none;
+}
+
+.obj-chip-input::placeholder {
+  color: rgba(200, 168, 112, 0.4);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.obj-chip-input:focus {
+  background: rgba(201, 168, 76, 0.25);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
 /* ═══════════════════════════════
    POPUP MENU
    ═══════════════════════════════ */

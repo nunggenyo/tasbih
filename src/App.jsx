@@ -218,8 +218,37 @@ function ObjektifSetupModal({ onClose, onSave, existing }) {
       : ZIKIR.map((z, i) => ({ id: i, zikirIdx: i, count: 33, enabled: false }))
   )
 
+  // State untuk simpan nilai input custom sementara bagi setiap ID zikir
+  const [customCounts, setCustomCounts] = useState(() => {
+    const initialCustom = {}
+    if (existing) {
+      existing.forEach(it => {
+        if (!DEFAULT_COUNTS.includes(it.count)) {
+          initialCustom[it.id] = it.count.toString()
+        }
+      })
+    }
+    return initialCustom
+  })
+
   const toggle = (id) => setItems(prev => prev.map(it => it.id === id ? { ...it, enabled: !it.enabled } : it))
-  const setCount = (id, count) => setItems(prev => prev.map(it => it.id === id ? { ...it, count } : it))
+
+  const setCount = (id, count) => {
+    setItems(prev => prev.map(it => it.id === id ? { ...it, count } : it))
+    // Reset input custom jika butang default dipilih
+    setCustomCounts(prev => ({ ...prev, [id]: '' }))
+  }
+
+  const handleCustomChange = (id, val) => {
+    // Hanya benarkan nombor
+    const numStr = val.replace(/\D/g, '')
+    setCustomCounts(prev => ({ ...prev, [id]: numStr }))
+
+    const parsed = parseInt(numStr, 10)
+    if (!isNaN(parsed) && parsed > 0) {
+      setItems(prev => prev.map(it => it.id === id ? { ...it, count: parsed } : it))
+    }
+  }
 
   const enabled = items.filter(it => it.enabled)
 
@@ -235,6 +264,8 @@ function ObjektifSetupModal({ onClose, onSave, existing }) {
         <div className="obj-setup-list">
           {items.map(it => {
             const z = ZIKIR[it.zikirIdx]
+            const isCustomActive = customCounts[it.id] && customCounts[it.id].length > 0
+
             return (
               <div key={it.id} className={`obj-setup-row ${it.enabled ? 'obj-setup-row--on' : ''}`}>
                 <button
@@ -253,10 +284,19 @@ function ObjektifSetupModal({ onClose, onSave, existing }) {
                     {DEFAULT_COUNTS.map(n => (
                       <button
                         key={n}
-                        className={`obj-chip ${it.count === n ? 'obj-chip--on' : ''}`}
+                        className={`obj-chip ${it.count === n && !isCustomActive ? 'obj-chip--on' : ''}`}
                         onClick={e => { e.stopPropagation(); setCount(it.id, n) }}
                       >{n}</button>
                     ))}
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      className={`obj-chip obj-chip-input ${isCustomActive ? 'obj-chip--on' : ''}`}
+                      placeholder="Jumlah lain"
+                      value={customCounts[it.id] || ''}
+                      onChange={e => handleCustomChange(it.id, e.target.value)}
+                      onClick={e => e.stopPropagation()}
+                    />
                   </div>
                 )}
               </div>
