@@ -312,7 +312,7 @@ export default function App() {
   const [selectedTheme, setSelectedTheme] = useState(() => localStorage.getItem('tasbih_theme') || 'cendana')
   const [selectedBead,  setSelectedBead]  = useState(() => localStorage.getItem('tasbih_bead')  || 'kayu')
   const [showAppearancePicker, setShowAppearancePicker] = useState(false)
-  const [isWallpaperMode, setIsWallpaperMode] = useState(() => localStorage.getItem('tasbih_wallpaper') === 'true')
+  const [isWallpaperMode, setIsWallpaperMode] = useState(false) // Dimatikan sementara
 
   const countRef    = useRef(0)
   const sessionIdRef   = useRef(null)
@@ -386,24 +386,35 @@ export default function App() {
     }, 520)
   }, [targetCount])
 
-  const onTouchStart = useCallback(e => {
-    touchY.current = e.touches[0].clientY
-    touchX.current = e.touches[0].clientX
+  const onPointerDown = useCallback(e => {
+    // Kita gunakan clientY/clientX terus dari event (berfungsi untuk tetikus & jari)
+    touchY.current = e.clientY
+    touchX.current = e.clientX
+
+    // (Pilihan) Set capture supaya seretan laju ke luar skrin tidak terlepas
+    if (e.target.setPointerCapture) {
+      e.target.setPointerCapture(e.pointerId)
+    }
   }, [])
 
-  const onTouchMove = useCallback(e => {
+  const onPointerMove = useCallback(e => {
     if (touchY.current === null || isSetupMode || showZikirPicker) return
-    const dy = e.touches[0].clientY - touchY.current
-    const dx = Math.abs(e.touches[0].clientX - touchX.current)
+    const dy = e.clientY - touchY.current
+    const dx = Math.abs(e.clientX - touchX.current)
+
     if (dy > 34 && dx < 52) {
-      touchY.current = null
+      touchY.current = null // reset supaya tidak trigger berkali-kali
       triggerCount()
     }
   }, [triggerCount, isSetupMode, showZikirPicker])
 
-  const onTouchEnd = useCallback(() => {
+  const onPointerUp = useCallback(e => {
     touchY.current = null
     touchX.current = null
+
+    if (e && e.target.releasePointerCapture) {
+      e.target.releasePointerCapture(e.pointerId)
+    }
   }, [])
 
   const onResetClick = useCallback(() => {
@@ -447,23 +458,25 @@ export default function App() {
   return (
     <div
       className={`app theme-${selectedTheme} beads-${selectedBead}${flash ? ' app--flash' : ''}`}
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
     >
-      <DynamicWallpaper isVisible={isWallpaperMode} />
+      {/* <DynamicWallpaper isVisible={isWallpaperMode} /> */}
       <div className={`wood-grain ${isWallpaperMode ? 'wood-grain--hidden' : ''}`} />
 
-      {/* ── Wallpaper Toggle Button ── */}
-      <button 
+      {/* ── Wallpaper Toggle Button (Disembunyikan) ── */}
+      {/* <button
         className={`wallpaper-btn ${isWallpaperMode ? 'wallpaper-btn--active' : ''}`}
         onClick={e => { e.stopPropagation(); setIsWallpaperMode(w => !w) }}
       >
         🖼️
       </button>
+      */}
 
       {/* ── Header ── */}
-      <header className={`header ${isWallpaperMode ? 'header--wallpaper-mode' : ''}`}>
+      <header className={`header ${isWallpaperMode ? 'header--wallpaper-mode' : ''} ${animating ? 'header--pulse' : ''}`}>
         {zikir.arabic && <div className="zikir-arabic">{zikir.arabic}</div>}
         <div className="zikir-latin">{zikir.latin}</div>
       </header>
@@ -490,10 +503,7 @@ export default function App() {
           <>
             <div key={`gi-${animKey}`} className="anim-imam">
               <div className="counter-shine" />
-              <div className="counter-text-overlay">
-                <span className="counter__num">{countAtAnim.current + 1}</span>
-                <span className="counter__frac">{targetCount} biji</span>
-              </div>
+              {/* Teks telah dibuang dari sini supaya tidak ikut jatuh */}
             </div>
             <div key={`rb-${animKey}`} className="anim-replace">
               <div className="bead__shine" />

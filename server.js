@@ -25,8 +25,16 @@ app.get('/api/wallpaper', async (req, res) => {
   }
 
   try {
+    // 1. Sediakan senarai kata kunci (keywords) yang luas tetapi relevan
+    const pool = ['nature', 'islamic', 'mosque', 'landscape', 'architecture', 'ramadan', 'mountains', 'stars', 'serene', 'sky'];
+
+    // 2. Kocok dan ambil 2 atau 3 kata kunci secara rawak untuk setiap request
+    const shuffled = pool.sort(() => 0.5 - Math.random());
+    const randomQuery = shuffled.slice(0, 3).join(',');
+
+    // 3. Gunakan randomQuery ke dalam URL (Tidak perlu lagi _t=Date.now)
     const response = await fetch(
-      `https://api.unsplash.com/photos/random?query=nature,islamic,mosque,landscape&orientation=portrait&count=30&_t=${Date.now()}`,
+      `https://api.unsplash.com/photos/random?query=${randomQuery}&orientation=portrait&count=30`,
       {
         headers: {
           Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}`,

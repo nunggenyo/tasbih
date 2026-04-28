@@ -106,6 +106,10 @@ export default function DynamicWallpaper({ isVisible }) {
         nextIndex = 0;
       }
 
+      // PINDAHKAN KEMAS KINI KE SINI
+      // Supaya index sentiasa bergerak ke hadapan walaupun gambar gagal/lambat di-load
+      currentIndexRef.current = nextIndex;
+
       const nextImg = currentImages[nextIndex];
 
       // PRELOAD GAMBAR: Elak skrin putih masa bertukar
@@ -122,10 +126,15 @@ export default function DynamicWallpaper({ isVisible }) {
           activeLayerRef.current = 1;
         }
         setAuthor({ name: nextImg.photographerName, username: nextImg.photographerUsername });
-        currentIndexRef.current = nextIndex;
+        // currentIndexRef.current = nextIndex; // TELAH DIPINDAH KE ATAS
         if (nextImg.downloadLocation) {
           trackDownload(nextImg.downloadLocation);
         }
+      };
+
+      // Handle ralat supaya tidak senyap jika gambar gagal dimuat turun
+      img.onerror = () => {
+        console.warn("Gambar gagal dimuat turun, aplikasi akan teruskan ke index seterusnya.");
       };
     }, 15000); // 15 saat
 
