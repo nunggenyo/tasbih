@@ -37,7 +37,7 @@ function fmtDate(dateStr) {
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
-function RecordsView({ onClose, onReset }) {
+function RecordsView({ onClose, onReset, embedded }) {
   const [filter, setFilter] = useState('hari')
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0])
   const [selectedMonth, setSelectedMonth] = useState(() => new Date().toISOString().slice(0, 7))
@@ -93,76 +93,69 @@ function RecordsView({ onClose, onReset }) {
 
   const grandTotal = Object.values(entries).reduce((a, b) => a + b, 0)
 
-  return (
-    <div className="overlay overlay--modal records-overlay">
-      <div className="records-box">
-        <div className="records-header">
-          <span className="records-title">Rekod Zikir</span>
-          <button className="records-close" onClick={onClose}>✕</button>
-        </div>
-
-        <div className="records-tabs">
-          {[['semalam','Semalam'],['hari','Hari Ini'],['bulan','Bulan'],['tarikh','Tarikh']].map(([val, lbl]) => (
-            <button
-              key={val}
-              className={`records-tab ${filter === val ? 'records-tab--active' : ''}`}
-              onClick={() => setFilter(val)}
-            >{lbl}</button>
-          ))}
-        </div>
-
-        {filter === 'bulan' && (
-          <div className="month-scroller">
-            {months.map(m => {
-              const [y, mo] = m.split('-')
-              const lbl = new Date(+y, +mo - 1, 1).toLocaleDateString('ms-MY', { month: 'short', year: 'numeric' })
-              return (
-                <button
-                  key={m}
-                  className={`month-opt ${selectedMonth === m ? 'month-opt--active' : ''}`}
-                  onClick={() => setSelectedMonth(m)}
-                >{lbl}</button>
-              )
-            })}
-          </div>
-        )}
-
-        {filter === 'tarikh' && (
-          <input
-            type="date"
-            className="records-date-input"
-            value={selectedDate}
-            max={new Date().toISOString().split('T')[0]}
-            onChange={e => setSelectedDate(e.target.value)}
-          />
-        )}
-
-        <div className="records-period">{label}</div>
-
-        <div className="records-list">
-          {grandTotal === 0 ? (
-            <div className="records-empty">Tiada rekod untuk tempoh ini.</div>
-          ) : (
-            <>
-              {Object.entries(entries)
-                .sort((a, b) => b[1] - a[1])
-                .map(([zikir, count]) => (
-                  <div key={zikir} className="records-item">
-                    <span className="records-zikir">{zikir}</span>
-                    <span className="records-count">{count.toLocaleString()}</span>
-                  </div>
-                ))}
-              <div className="records-divider" />
-              <div className="records-item records-item--total">
-                <span>Jumlah</span>
-                <span>{grandTotal.toLocaleString()}</span>
-              </div>
-            </>
-          )}
-        </div>
-
-        <button className="records-reset-btn" onClick={() => setConfirmReset(true)}>Reset Rekod</button>
+  const content = (
+    <>
+      <div className="records-tabs">
+        {[['semalam','Semalam'],['hari','Hari Ini'],['bulan','Bulan'],['tarikh','Tarikh']].map(([val, lbl]) => (
+          <button
+            key={val}
+            className={`records-tab ${filter === val ? 'records-tab--active' : ''}`}
+            onClick={() => setFilter(val)}
+          >{lbl}</button>
+        ))}
       </div>
+
+      {filter === 'bulan' && (
+        <div className="month-scroller">
+          {months.map(m => {
+            const [y, mo] = m.split('-')
+            const lbl = new Date(+y, +mo - 1, 1).toLocaleDateString('ms-MY', { month: 'short', year: 'numeric' })
+            return (
+              <button
+                key={m}
+                className={`month-opt ${selectedMonth === m ? 'month-opt--active' : ''}`}
+                onClick={() => setSelectedMonth(m)}
+              >{lbl}</button>
+            )
+          })}
+        </div>
+      )}
+
+      {filter === 'tarikh' && (
+        <input
+          type="date"
+          className="records-date-input"
+          value={selectedDate}
+          max={new Date().toISOString().split('T')[0]}
+          onChange={e => setSelectedDate(e.target.value)}
+        />
+      )}
+
+      <div className="records-period">{label}</div>
+
+      <div className="records-list">
+        {grandTotal === 0 ? (
+          <div className="records-empty">Tiada rekod untuk tempoh ini.</div>
+        ) : (
+          <>
+            {Object.entries(entries)
+              .sort((a, b) => b[1] - a[1])
+              .map(([zikir, count]) => (
+                <div key={zikir} className="records-item">
+                  <span className="records-zikir">{zikir}</span>
+                  <span className="records-count">{count.toLocaleString()}</span>
+                </div>
+              ))}
+            <div className="records-divider" />
+            <div className="records-item records-item--total">
+              <span>Jumlah</span>
+              <span>{grandTotal.toLocaleString()}</span>
+            </div>
+          </>
+        )}
+      </div>
+
+      <button className="records-reset-btn" onClick={() => setConfirmReset(true)}>Reset Rekod</button>
 
       {confirmReset && (
         <div className="overlay overlay--modal" style={{ zIndex: 300 }}>
@@ -176,6 +169,20 @@ function RecordsView({ onClose, onReset }) {
           </div>
         </div>
       )}
+    </>
+  )
+
+  if (embedded) return content
+
+  return (
+    <div className="overlay overlay--modal records-overlay">
+      <div className="records-box">
+        <div className="records-header">
+          <span className="records-title">Rekod Zikir</span>
+          <button className="records-close" onClick={onClose}>✕</button>
+        </div>
+        {content}
+      </div>
     </div>
   )
 }
@@ -273,17 +280,12 @@ function ObjektifSetupModal({ onClose, onSave, existing }) {
   )
 }
 
-function ObjektifView({ onClose, onStartZikir }) {
+function ObjektifView({ onClose, onStartZikir, embedded }) {
   const todayStr = new Date().toISOString().split('T')[0]
   const [showSetup, setShowSetup] = useState(false)
   const [objectives, setObjectives] = useState(() => {
     const saved = localStorage.getItem('zikir_objectives')
     return saved ? JSON.parse(saved) : []
-  })
-  const [progress, setProgress] = useState(() => {
-    const key = `zikir_obj_progress_${todayStr}`
-    const saved = localStorage.getItem(key)
-    return saved ? JSON.parse(saved) : {}
   })
 
   const enabledObj = objectives.filter(it => it.enabled)
@@ -302,76 +304,66 @@ function ObjektifView({ onClose, onStartZikir }) {
   }
 
   const handleStart = (obj) => {
-    onClose()
     onStartZikir(obj.zikirIdx, obj.count)
   }
 
-  return (
+  const content = (
     <>
-      <div className="overlay overlay--modal records-overlay">
-        <div className="records-box">
-          <div className="records-header">
-            <span className="records-title">Objektif Harian</span>
-            <button className="records-close" onClick={onClose}>✕</button>
-          </div>
-
-          <div className="obj-date-label">
-            {new Date().toLocaleDateString('ms-MY', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-          </div>
-
-          {enabledObj.length === 0 ? (
-            <div className="records-empty" style={{ padding: '32px 0' }}>
-              Tiada objektif ditetapkan.<br />
-              <span style={{ fontSize: '0.82rem', color: '#7a6030', marginTop: 6, display: 'block' }}>
-                Tekan "Set Objektif" untuk mulakan.
-              </span>
-            </div>
-          ) : (
-            <div className="obj-list">
-              {enabledObj.map(obj => {
-                const done = getProgress(obj)
-                const pct = Math.min(1, done / obj.count)
-                const complete = done >= obj.count
-                const z = ZIKIR[obj.zikirIdx]
-                return (
-                  <button
-                    key={obj.id}
-                    className={`obj-card ${complete ? 'obj-card--done' : ''}`}
-                    onClick={() => !complete && handleStart(obj)}
-                  >
-                    <div className="obj-card-top">
-                      <div className="obj-card-text">
-                        <span className="obj-card-arabic">{z.arabic}</span>
-                        <span className="obj-card-latin">{z.latin}</span>
-                      </div>
-                      <div className="obj-card-status">
-                        {complete
-                          ? <span className="obj-done-badge">✓ Selesai</span>
-                          : <span className="obj-tap-hint">Ketuk untuk mulakan →</span>
-                        }
-                      </div>
-                    </div>
-                    <div className="obj-progress-bar-wrap">
-                      <div className="obj-progress-bar">
-                        <div className="obj-progress-fill" style={{ width: `${pct * 100}%` }} />
-                      </div>
-                      <span className="obj-progress-label">{done.toLocaleString()} / {obj.count.toLocaleString()}</span>
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
-          )}
-
-          <button
-            className="setup-start-btn"
-            style={{ width: '100%', marginTop: 12 }}
-            onClick={() => setShowSetup(true)}
-          >
-            ✎ Set Objektif
-          </button>
-        </div>
+      <div className="obj-date-label">
+        {new Date().toLocaleDateString('ms-MY', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
       </div>
+
+      {enabledObj.length === 0 ? (
+        <div className="records-empty" style={{ padding: '32px 0' }}>
+          Tiada objektif ditetapkan.<br />
+          <span style={{ fontSize: '0.82rem', color: '#7a6030', marginTop: 6, display: 'block' }}>
+            Tekan "Set Objektif" untuk mulakan.
+          </span>
+        </div>
+      ) : (
+        <div className="obj-list">
+          {enabledObj.map(obj => {
+            const done = getProgress(obj)
+            const pct = Math.min(1, done / obj.count)
+            const complete = done >= obj.count
+            const z = ZIKIR[obj.zikirIdx]
+            return (
+              <button
+                key={obj.id}
+                className={`obj-card ${complete ? 'obj-card--done' : ''}`}
+                onClick={() => !complete && handleStart(obj)}
+              >
+                <div className="obj-card-top">
+                  <div className="obj-card-text">
+                    <span className="obj-card-arabic">{z.arabic}</span>
+                    <span className="obj-card-latin">{z.latin}</span>
+                  </div>
+                  <div className="obj-card-status">
+                    {complete
+                      ? <span className="obj-done-badge">✓ Selesai</span>
+                      : <span className="obj-tap-hint">Ketuk untuk mulakan →</span>
+                    }
+                  </div>
+                </div>
+                <div className="obj-progress-bar-wrap">
+                  <div className="obj-progress-bar">
+                    <div className="obj-progress-fill" style={{ width: `${pct * 100}%` }} />
+                  </div>
+                  <span className="obj-progress-label">{done.toLocaleString()} / {obj.count.toLocaleString()}</span>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      <button
+        className="setup-start-btn"
+        style={{ width: '100%', marginTop: 12 }}
+        onClick={() => setShowSetup(true)}
+      >
+        ✎ Set Objektif
+      </button>
 
       {showSetup && (
         <ObjektifSetupModal
@@ -382,9 +374,61 @@ function ObjektifView({ onClose, onStartZikir }) {
       )}
     </>
   )
+
+  if (embedded) return content
+
+  return (
+    <>
+      <div className="overlay overlay--modal records-overlay">
+        <div className="records-box">
+          <div className="records-header">
+            <span className="records-title">Objektif Harian</span>
+            <button className="records-close" onClick={onClose}>✕</button>
+          </div>
+          {content}
+        </div>
+      </div>
+    </>
+  )
 }
 
-function AppearancePicker({ currentTheme, onSelectTheme, currentBead, onSelectBead, onClose }) {
+function AppearancePicker({ currentTheme, onSelectTheme, currentBead, onSelectBead, onClose, embedded }) {
+  const content = (
+    <>
+      <div className="appearance-section-title">Tema Latar</div>
+      <div className="picker-grid">
+        {THEMES.map(t => (
+          <button
+            key={t.id}
+            className={`picker-card${currentTheme === t.id ? ' picker-card--active' : ''}`}
+            onClick={() => onSelectTheme(t.id)}
+          >
+            <span className="picker-swatch" style={{ background: t.swatch }} />
+            <span className="picker-label">{t.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="appearance-divider" />
+
+      <div className="appearance-section-title">Jenis Tasbih</div>
+      <div className="picker-grid">
+        {BEAD_TYPES.map(b => (
+          <button
+            key={b.id}
+            className={`picker-card${currentBead === b.id ? ' picker-card--active' : ''}`}
+            onClick={() => onSelectBead(b.id)}
+          >
+            <span className="picker-swatch" style={{ background: b.swatch }} />
+            <span className="picker-label">{b.label}</span>
+          </button>
+        ))}
+      </div>
+    </>
+  )
+
+  if (embedded) return content
+
   return (
     <div className="overlay overlay--modal picker-overlay">
       <div className="picker-box" style={{ gap: '14px' }}>
@@ -392,36 +436,7 @@ function AppearancePicker({ currentTheme, onSelectTheme, currentBead, onSelectBe
           <span className="picker-title">Penampilan</span>
           <button className="records-close" onClick={onClose}>✕</button>
         </div>
-
-        <div className="appearance-section-title">Tema Latar</div>
-        <div className="picker-grid">
-          {THEMES.map(t => (
-            <button
-              key={t.id}
-              className={`picker-card${currentTheme === t.id ? ' picker-card--active' : ''}`}
-              onClick={() => onSelectTheme(t.id)}
-            >
-              <span className="picker-swatch" style={{ background: t.swatch }} />
-              <span className="picker-label">{t.label}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="appearance-divider" />
-
-        <div className="appearance-section-title">Jenis Tasbih</div>
-        <div className="picker-grid">
-          {BEAD_TYPES.map(b => (
-            <button
-              key={b.id}
-              className={`picker-card${currentBead === b.id ? ' picker-card--active' : ''}`}
-              onClick={() => onSelectBead(b.id)}
-            >
-              <span className="picker-swatch" style={{ background: b.swatch }} />
-              <span className="picker-label">{b.label}</span>
-            </button>
-          ))}
-        </div>
+        {content}
       </div>
     </div>
   )
@@ -486,18 +501,14 @@ export default function App() {
   const [showResetModal, setShowResetModal] = useState(false)
   const [targetCount, setTargetCount] = useState(33)
   const [selectedZikirIdx, setSelectedZikirIdx] = useState(0)
-  const [isSetupMode, setIsSetupMode] = useState(false)
-  const [showRecords, setShowRecords] = useState(false)
   const [showZikirPicker, setShowZikirPicker] = useState(false)
   const [sessionStarted, setSessionStarted] = useState(false)
   const [customZikirText, setCustomZikirText] = useState('')
   const [customCountText, setCustomCountText] = useState('')
   const [selectedTheme, setSelectedTheme] = useState(() => localStorage.getItem('tasbih_theme') || 'cendana')
   const [selectedBead,  setSelectedBead]  = useState(() => localStorage.getItem('tasbih_bead')  || 'kayu')
-  const [showAppearancePicker, setShowAppearancePicker] = useState(false)
-  const [showObjectives, setShowObjectives] = useState(false)
-  const [showMenu, setShowMenu] = useState(true)
-  const [isWallpaperMode, setIsWallpaperMode] = useState(false) // Dimatikan sementara
+  const [menuView, setMenuView] = useState('main')
+  const [isWallpaperMode, setIsWallpaperMode] = useState(false)
 
   const countRef    = useRef(0)
   const sessionIdRef   = useRef(null)
@@ -556,7 +567,7 @@ export default function App() {
         setRoundDone(false)
         setCount(0)
         setSessionStarted(false)
-        setShowMenu(true)
+        setMenuView('main')
       }, 1500)
     } else {
       countRef.current = next
@@ -584,7 +595,7 @@ export default function App() {
   }, [])
 
   const onPointerMove = useCallback(e => {
-    if (touchY.current === null || isSetupMode || showZikirPicker) return
+    if (touchY.current === null || menuView !== null || showZikirPicker) return
     const dy = e.clientY - touchY.current
     const dx = Math.abs(e.clientX - touchX.current)
 
@@ -592,7 +603,7 @@ export default function App() {
       touchY.current = null // reset supaya tidak trigger berkali-kali
       triggerCount()
     }
-  }, [triggerCount, isSetupMode, showZikirPicker])
+  }, [triggerCount, menuView, showZikirPicker])
 
   const onPointerUp = useCallback(e => {
     touchY.current = null
@@ -614,8 +625,7 @@ export default function App() {
     setFlash(false)
     setRoundDone(false)
     setSessionStarted(false)
-    setShowRecords(false)
-    setShowMenu(true)
+    setMenuView('main')
   }, [])
 
   const confirmReset = useCallback(e => {
@@ -631,7 +641,7 @@ export default function App() {
     setRoundDone(false)
     setSessionStarted(false)
     setShowResetModal(false)
-    setShowMenu(true)
+    setMenuView('main')
   }, [])
 
   const cancelReset = useCallback(e => {
@@ -665,8 +675,7 @@ export default function App() {
     setFlash(false)
     setRoundDone(false)
     setSessionStarted(true)
-    setIsSetupMode(false)
-    setShowObjectives(false)
+    setMenuView(null)
   }, [])
 
   const switchZikir = useCallback(idx => {
@@ -763,7 +772,7 @@ export default function App() {
       <footer className="footer">
         <button
           className="menu-btn"
-          onClick={e => { e.stopPropagation(); setShowMenu(m => !m) }}
+          onClick={e => { e.stopPropagation(); setMenuView('main') }}
         >
           ☰ Menu
         </button>
@@ -772,36 +781,170 @@ export default function App() {
         </div>
       </footer>
 
-      {/* ── Popup Menu ── */}
-      {showMenu && (
+      {/* ── Unified Menu & Sub-views ── */}
+      {menuView !== null && (
         <div
-          className="menu-backdrop"
-          onClick={e => { e.stopPropagation(); if (sessionStarted) setShowMenu(false) }}
+          className="menu-backdrop menu-backdrop--center"
+          onClick={e => { e.stopPropagation(); if (sessionStarted) setMenuView(null) }}
         >
-          <div className="menu-popup" onClick={e => e.stopPropagation()}>
-            <div className="menu-popup-title">Menu</div>
-            <button className="menu-item" onClick={e => { e.stopPropagation(); setShowMenu(false); setIsSetupMode(true) }}>
-              <span className="menu-item-icon">📿</span>
-              <span>Pilih Zikir</span>
-            </button>
-            <button className="menu-item" onClick={e => { e.stopPropagation(); setShowMenu(false); setShowObjectives(true) }}>
-              <span className="menu-item-icon">🎯</span>
-              <span>Objektif Harian</span>
-            </button>
-            <button className="menu-item" onClick={e => { e.stopPropagation(); setShowMenu(false); setShowRecords(true) }}>
-              <span className="menu-item-icon">📊</span>
-              <span>Rekod</span>
-            </button>
-            <button className="menu-item" onClick={e => { e.stopPropagation(); setShowMenu(false); setShowAppearancePicker(true) }}>
-              <span className="menu-item-icon">🎨</span>
-              <span>Penampilan</span>
-            </button>
-            {sessionStarted && (
-              <button className="menu-item menu-item--close" onClick={e => { e.stopPropagation(); setShowMenu(false) }}>
-                Tutup
+
+          {/* ── Main Menu ── */}
+          {menuView === 'main' && (
+            <div className="menu-popup" onClick={e => e.stopPropagation()}>
+              <div className="menu-popup-title">Menu</div>
+              <button className="menu-item" onClick={e => { e.stopPropagation(); setMenuView('zikir') }}>
+                <span className="menu-item-icon">📿</span>
+                <span>Pilih Zikir</span>
               </button>
-            )}
-          </div>
+              <button className="menu-item" onClick={e => { e.stopPropagation(); setMenuView('objektif') }}>
+                <span className="menu-item-icon">🎯</span>
+                <span>Objektif Harian</span>
+              </button>
+              <button className="menu-item" onClick={e => { e.stopPropagation(); setMenuView('rekod') }}>
+                <span className="menu-item-icon">📊</span>
+                <span>Rekod</span>
+              </button>
+              <button className="menu-item" onClick={e => { e.stopPropagation(); setMenuView('penampilan') }}>
+                <span className="menu-item-icon">🎨</span>
+                <span>Penampilan</span>
+              </button>
+              {sessionStarted && (
+                <button className="menu-item menu-item--close" onClick={e => { e.stopPropagation(); setMenuView(null) }}>
+                  Tutup
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* ── Pilih Zikir ── */}
+          {menuView === 'zikir' && (
+            <div className="menu-popup menu-popup--wide" onClick={e => e.stopPropagation()}>
+              <div className="menu-sub-header">
+                <button className="menu-back-btn" onClick={e => { e.stopPropagation(); setMenuView('main') }}>← Kembali</button>
+                <span className="menu-popup-title" style={{ flex: 1 }}>Pilih Zikir</span>
+              </div>
+
+              <div className="setup-columns">
+                <div className="setup-col">
+                  <div className="setup-col-title">Zikir</div>
+                  <div className="setup-col-list">
+                    {ZIKIR.map((z, idx) => (
+                      <button
+                        key={idx}
+                        className={`setup-opt ${selectedZikirIdx === idx ? 'setup-opt--active' : ''}`}
+                        onClick={() => { setSelectedZikirIdx(idx); setCustomZikirText('') }}
+                      >
+                        {z.latin}
+                      </button>
+                    ))}
+                    <input
+                      className={`setup-custom-input ${selectedZikirIdx === -1 ? 'setup-custom-input--active' : ''}`}
+                      placeholder="Zikir lain..."
+                      value={customZikirText}
+                      onChange={e => { setCustomZikirText(e.target.value); setSelectedZikirIdx(-1) }}
+                      onClick={e => e.stopPropagation()}
+                    />
+                  </div>
+                </div>
+
+                <div className="setup-col">
+                  <div className="setup-col-title">Jumlah</div>
+                  <div className="setup-col-list">
+                    {[33, 99, 100, 1000, 70000].map(num => (
+                      <button
+                        key={num}
+                        className={`setup-opt ${targetCount === num && customCountText === '' ? 'setup-opt--active' : ''}`}
+                        onClick={() => { setTargetCount(num); setCustomCountText('') }}
+                      >
+                        {num === 70000 ? '70,000' : num}x
+                      </button>
+                    ))}
+                    <input
+                      className={`setup-custom-input ${customCountText !== '' ? 'setup-custom-input--active' : ''}`}
+                      placeholder="Jumlah lain..."
+                      inputMode="numeric"
+                      value={customCountText}
+                      onChange={e => {
+                        const val = e.target.value.replace(/\D/g, '')
+                        setCustomCountText(val)
+                        if (val && parseInt(val) > 0) setTargetCount(parseInt(val))
+                      }}
+                      onClick={e => e.stopPropagation()}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="setup-actions">
+                <button
+                  className="setup-start-btn"
+                  disabled={selectedZikirIdx === -1 && !customZikirText.trim()}
+                  onClick={() => {
+                    sessionIdRef.current   = Date.now()
+                    sessionDateRef.current = new Date().toISOString().split('T')[0]
+                    countRef.current = 0
+                    animRef.current  = false
+                    setCount(0)
+                    setTotal(0)
+                    setFlash(false)
+                    setRoundDone(false)
+                    setSessionStarted(true)
+                    setMenuView(null)
+                  }}>
+                  {sessionStarted ? 'Pilih' : 'Mula Zikir'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── Objektif Harian ── */}
+          {menuView === 'objektif' && (
+            <div className="menu-popup menu-popup--wide" onClick={e => e.stopPropagation()}>
+              <div className="menu-sub-header">
+                <button className="menu-back-btn" onClick={e => { e.stopPropagation(); setMenuView('main') }}>← Kembali</button>
+                <span className="menu-popup-title" style={{ flex: 1 }}>Objektif Harian</span>
+              </div>
+              <ObjektifView
+                embedded
+                onClose={() => setMenuView('main')}
+                onStartZikir={startFromObjectif}
+              />
+            </div>
+          )}
+
+          {/* ── Rekod ── */}
+          {menuView === 'rekod' && (
+            <div className="menu-popup menu-popup--wide" onClick={e => e.stopPropagation()}>
+              <div className="menu-sub-header">
+                <button className="menu-back-btn" onClick={e => { e.stopPropagation(); setMenuView('main') }}>← Kembali</button>
+                <span className="menu-popup-title" style={{ flex: 1 }}>Rekod Zikir</span>
+              </div>
+              <RecordsView
+                embedded
+                onClose={() => setMenuView('main')}
+                onReset={onResetClick}
+              />
+            </div>
+          )}
+
+          {/* ── Penampilan ── */}
+          {menuView === 'penampilan' && (
+            <div className="menu-popup menu-popup--wide" onClick={e => e.stopPropagation()}>
+              <div className="menu-sub-header">
+                <button className="menu-back-btn" onClick={e => { e.stopPropagation(); setMenuView('main') }}>← Kembali</button>
+                <span className="menu-popup-title" style={{ flex: 1 }}>Penampilan</span>
+              </div>
+              <AppearancePicker
+                embedded
+                currentTheme={selectedTheme}
+                onSelectTheme={setSelectedTheme}
+                currentBead={selectedBead}
+                onSelectBead={setSelectedBead}
+                onClose={() => setMenuView('main')}
+              />
+            </div>
+          )}
+
         </div>
       )}
 
@@ -830,124 +973,8 @@ export default function App() {
         </div>
       )}
 
-      {/* ── Records Overlay ── */}
-      {showRecords && (
-        <RecordsView
-          onClose={() => setShowRecords(false)}
-          onReset={onResetClick}
-        />
-      )}
 
-      {/* ── Tukar Zikir Picker ── */}
-      {showZikirPicker && (
-        <ZikirPicker
-          current={selectedZikirIdx}
-          onSelect={switchZikir}
-          onClose={() => setShowZikirPicker(false)}
-        />
-      )}
 
-      {/* ── Setup / Pre-start Overlay ── */}
-      {isSetupMode && (
-        <div className="overlay setup-overlay">
-          <div className="setup-box">
-            <div className="setup-title">Pilih Zikir</div>
-
-            <div className="setup-columns">
-              <div className="setup-col">
-                <div className="setup-col-title">Zikir</div>
-                <div className="setup-col-list">
-                  {ZIKIR.map((z, idx) => (
-                    <button
-                      key={idx}
-                      className={`setup-opt ${selectedZikirIdx === idx ? 'setup-opt--active' : ''}`}
-                      onClick={() => { setSelectedZikirIdx(idx); setCustomZikirText('') }}
-                    >
-                      {z.latin}
-                    </button>
-                  ))}
-                  <input
-                    className={`setup-custom-input ${selectedZikirIdx === -1 ? 'setup-custom-input--active' : ''}`}
-                    placeholder="Zikir lain..."
-                    value={customZikirText}
-                    onChange={e => { setCustomZikirText(e.target.value); setSelectedZikirIdx(-1) }}
-                    onClick={e => e.stopPropagation()}
-                  />
-                </div>
-              </div>
-
-              <div className="setup-col">
-                <div className="setup-col-title">Jumlah</div>
-                <div className="setup-col-list">
-                  {[33, 99, 100, 1000, 70000].map(num => (
-                    <button
-                      key={num}
-                      className={`setup-opt ${targetCount === num && customCountText === '' ? 'setup-opt--active' : ''}`}
-                      onClick={() => { setTargetCount(num); setCustomCountText('') }}
-                    >
-                      {num === 70000 ? '70,000' : num}x
-                    </button>
-                  ))}
-                  <input
-                    className={`setup-custom-input ${customCountText !== '' ? 'setup-custom-input--active' : ''}`}
-                    placeholder="Jumlah lain..."
-                    inputMode="numeric"
-                    value={customCountText}
-                    onChange={e => {
-                      const val = e.target.value.replace(/\D/g, '')
-                      setCustomCountText(val)
-                      if (val && parseInt(val) > 0) setTargetCount(parseInt(val))
-                    }}
-                    onClick={e => e.stopPropagation()}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="setup-actions">
-              {sessionStarted && (
-                <button className="modal-btn modal-btn--cancel" onClick={() => setIsSetupMode(false)}>Batal</button>
-              )}
-              <button
-                className="setup-start-btn"
-                disabled={selectedZikirIdx === -1 && !customZikirText.trim()}
-                onClick={() => {
-                  sessionIdRef.current   = Date.now()
-                  sessionDateRef.current = new Date().toISOString().split('T')[0]
-                  countRef.current = 0
-                  animRef.current  = false
-                  setCount(0)
-                  setTotal(0)
-                  setFlash(false)
-                  setRoundDone(false)
-                  setSessionStarted(true)
-                  setIsSetupMode(false)
-                }}>
-                {sessionStarted ? 'Pilih' : 'Mula Zikir'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Objectives Overlay ── */}
-      {showObjectives && (
-        <ObjektifView
-          onClose={() => setShowObjectives(false)}
-          onStartZikir={startFromObjectif}
-        />
-      )}
-
-      {/* ── Appearance Picker (Tema & Tasbih) ── */}
-      {showAppearancePicker && (
-        <AppearancePicker
-          currentTheme={selectedTheme}
-          onSelectTheme={setSelectedTheme}
-          currentBead={selectedBead}
-          onSelectBead={setSelectedBead}
-          onClose={() => setShowAppearancePicker(false)}
-        />
-      )}
     </div>
   )
 }

@@ -2156,3 +2156,52 @@
   border-color: transparent;
   transform: none;
 }
+
+/* ── Menu centered backdrop ── */
+.menu-backdrop--center {
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 0;
+}
+
+/* ── Wide popup for sub-views ── */
+.menu-popup--wide {
+  width: min(92vw, 420px);
+  max-height: 82svh;
+  overflow-y: auto;
+  gap: 10px;
+  display: flex;
+  flex-direction: column;
+}
+.menu-popup--wide::-webkit-scrollbar { width: 3px; }
+.menu-popup--wide::-webkit-scrollbar-thumb { background: #5c3a1e; border-radius: 2px; }
+
+/* ── Sub-view header row ── */
+.menu-sub-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+/* ── Back button ── */
+.menu-back-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #a08050;
+  background: rgba(30, 16, 6, 0.6);
+  border: 1px solid rgba(92, 58, 30, 0.4);
+  border-radius: 20px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.menu-back-btn:hover,
+.menu-back-btn:active {
+  color: var(--gold);
+  border-color: var(--gold);
+}
